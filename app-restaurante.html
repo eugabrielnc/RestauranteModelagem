@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistema de Restaurante — Protótipo Funcional</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#E4572E; --primary-dark:#C2431E; --secondary:#2E4034;
+  --accent:#F2C14E; --success:#4C9A6A; --warning:#F2A541; --error:#D64545;
+  --bg:#F7F5F2; --surface:#FFFFFF; --border:#E8E4DE;
+  --text:#1F1B16; --text-2:#5C554B;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+h1,h2,h3{font-family:'Poppins',sans-serif;letter-spacing:-0.01em}
+
+
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:400px;box-shadow:0 12px 32px rgba(31,27,22,.08)}
+.login-card h1{font-size:24px;margin-bottom:4px}
+.login-card .sub{color:var(--text-2);margin-bottom:24px;font-size:13px}
+.demo-accounts{margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.demo-accounts .t{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);margin-bottom:8px;font-weight:600}
+.demo-btn{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:6px;cursor:pointer;font-size:12.5px;font-family:inherit}
+.demo-btn:hover{border-color:var(--primary)}
+.demo-btn b{font-family:'Poppins',sans-serif}
+
+
+.topbar{background:var(--secondary);color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar .brand{font-family:'Poppins',sans-serif;font-weight:700;font-size:16px}
+.topbar .user{display:flex;align-items:center;gap:12px;font-size:12.5px}
+.role-badge{background:rgba(255,255,255,.16);padding:4px 10px;border-radius:99px;font-weight:600;font-size:11px}
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:4px;overflow-x:auto}
+.nav button{font-family:'Poppins',sans-serif;font-weight:600;font-size:13px;background:none;border:none;padding:14px 12px;color:var(--text-2);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent}
+.nav button.active{color:var(--text);border-bottom-color:var(--primary)}
+main{max-width:1060px;margin:0 auto;padding:28px 20px 80px}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;gap:16px;flex-wrap:wrap}
+.page-head h2{font-size:21px}
+.page-head p{color:var(--text-2);font-size:13px;margin-top:3px}
+
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:18px}
+.card h3{font-size:15px;margin-bottom:14px}
+label{display:block;font-size:11.5px;font-weight:600;color:var(--text-2);margin-bottom:4px}
+input,select,textarea{width:100%;font-family:inherit;font-size:13px;padding:9px 11px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text)}
+input:focus,select:focus{outline:2px solid rgba(228,87,46,.25);border-color:var(--primary)}
+.form-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+.form-row>div{flex:1;min-width:120px}
+button.btn{font-family:'Inter',sans-serif;font-weight:600;font-size:13px;background:var(--primary);color:#fff;border:none;border-radius:7px;padding:10px 16px;cursor:pointer;min-height:40px}
+button.btn:hover{background:var(--primary-dark)}
+button.btn.sec{background:transparent;color:var(--secondary);border:1px solid var(--border)}
+button.btn.sec:hover{background:var(--bg)}
+button.btn.dang{background:transparent;color:var(--error);border:1px solid var(--border)}
+button.btn.dang:hover{background:#fdeeee}
+button.btn.sm{padding:6px 10px;font-size:12px;min-height:32px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-2);padding:8px 8px 8px 0;border-bottom:1px solid var(--border)}
+td{padding:10px 8px 10px 0;border-bottom:1px solid var(--border);vertical-align:middle}
+td input,td select{padding:6px 8px;font-size:12.5px}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;color:#fff}
+.pill.success{background:var(--success)}.pill.warning{background:var(--warning);color:var(--text)}
+.pill.primary{background:var(--primary)}.pill.accent{background:var(--accent);color:var(--text)}
+.pill.error{background:var(--error)}.pill.muted{background:var(--border);color:var(--text-2)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.stat .n{font-family:'Poppins',sans-serif;font-weight:700;font-size:24px}
+.stat .l{font-size:11.5px;color:var(--text-2);margin-top:2px}
+.mesa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.mesa{border-radius:12px;padding:14px;color:#fff;cursor:pointer;border:none;font-family:inherit;text-align:left}
+.mesa .num{font-family:'Poppins',sans-serif;font-weight:700;font-size:18px}
+.mesa .cap{font-size:11px;opacity:.9;margin-top:2px}
+.mesa .st{font-size:11px;font-weight:600;margin-top:8px;background:rgba(255,255,255,.22);display:inline-block;padding:2px 8px;border-radius:99px}
+.empty{color:var(--text-2);font-size:13px;padding:18px 0;text-align:center}
+.item-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.item-row .nm{font-weight:600}
+.item-row .mt{font-size:11.5px;color:var(--text-2)}
+.total-row{display:flex;justify-content:space-between;padding:10px 0;font-size:13px}
+.total-row.big{font-family:'Poppins',sans-serif;font-weight:700;font-size:17px;border-top:2px solid var(--text);margin-top:6px;padding-top:12px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--secondary);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;opacity:0;transition:.3s;z-index:100}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+#toast.err{background:var(--error)}
+.hint{font-size:12px;color:var(--text-2);line-height:1.5}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:720px){.grid-2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="toast"></div>
+
+<script>
+
+let uid = 100;
+const nid = () => ++uid;
+
+const S = {
+  user: null,
+  view: null,
+  users: [
+    {id:1, nome:'Ana Souza',    email:'admin@rest.com',   senha:'123', papel:'admin',  salario:0},
+    {id:2, nome:'Marina Lima',  email:'garcom@rest.com',  senha:'123', papel:'garcom', salario:2100},
+    {id:3, nome:'Diego Rocha',  email:'diego@rest.com',   senha:'123', papel:'garcom', salario:2100},
+    {id:4, nome:'Carlos Melo',  email:'cliente@rest.com', senha:'123', papel:'cliente',salario:0},
+  ],
+  mesas: [
+    {id:11, numero:1, capacidade:4, status:'livre'},
+    {id:12, numero:2, capacidade:2, status:'livre'},
+    {id:13, numero:3, capacidade:6, status:'livre'},
+    {id:14, numero:4, capacidade:4, status:'livre'},
+    {id:15, numero:5, capacidade:2, status:'livre'},
+    {id:16, numero:6, capacidade:8, status:'livre'},
+  ],
+  pratos: [
+    {id:21, nome:'Risoto de funghi',  categoria:'Principais', preco:48, ativo:true},
+    {id:22, nome:'Salmão grelhado',   categoria:'Principais', preco:62, ativo:true},
+    {id:23, nome:'Bruschetta',        categoria:'Entradas',   preco:26, ativo:true},
+    {id:24, nome:'Petit gâteau',      categoria:'Sobremesas', preco:24, ativo:true},
+    {id:25, nome:'Água com gás',      categoria:'Bebidas',    preco:8,  ativo:true},
+  ],
+  insumos: [
+    {id:31, nome:'Arroz arbóreo', unidade:'kg', qtd:4,  minimo:5},
+    {id:32, nome:'Salmão',        unidade:'kg', qtd:12, minimo:6},
+    {id:33, nome:'Funghi seco',   unidade:'kg', qtd:2,  minimo:1},
+    {id:34, nome:'Água com gás',  unidade:'un', qtd:30, minimo:12},
+  ],
+  comandas: [],   // {id, mesaId, clienteId, itens:[{pratoId,qtd}], status:'aberta'|'paga', total, pagoEm}
+  reservas: [],   // {id, mesaId, clienteId, data, hora, pessoas}
+  folgas: [],     // {id, userId, data, motivo, status}
+  pagamentos: [], // {id, userId, valor, data}
+  sel: {mesa:null, comanda:null}, // seleções de navegação
+};
+
+
+const $ = id => document.getElementById(id);
+const money = v => 'R$ ' + v.toFixed(2).replace('.', ',');
+const val = id => ($(id) ? $(id).value.trim() : '');
+const num = id => parseFloat(val(id)) || 0;
+const byId = (arr, id) => arr.find(x => x.id === id);
+const hoje = () => new Date().toISOString().slice(0,10);
+
+function toast(msg, err){
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'show' + (err ? ' err' : '');
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.className = '', 2600);
+}
+
+const statusCor = {livre:'var(--success)', ocupada:'var(--primary)', reservada:'var(--accent)'};
+const statusPill = {livre:'success', ocupada:'primary', reservada:'accent'};
+
+function totalComanda(c){
+  return c.itens.reduce((s,i) => s + (byId(S.pratos, i.pratoId)?.preco || 0) * i.qtd, 0);
+}
+function comandaAberta(mesaId){
+  return S.comandas.find(c => c.mesaId === mesaId && c.status === 'aberta');
+}
+
+
+function login(email, senha){
+  const u = S.users.find(x => x.email === email && x.senha === senha);
+  if(!u){ toast('E-mail ou senha inválidos', true); return; }
+  S.user = u;
+  S.view = u.papel === 'admin' ? 'dashboard' : u.papel === 'garcom' ? 'mesas' : 'reservar';
+  toast('Bem-vindo(a), ' + u.nome.split(' ')[0] + '!');
+  render();
+}
+function doLogin(){ login(val('email'), val('senha')); }
+function quickLogin(email){ login(email, '123'); }
+function logout(){ S.user = null; S.sel = {mesa:null, comanda:null}; render(); }
+
+function cadastrar(){
+  const nome = val('c_nome'), email = val('c_email'), senha = val('c_senha');
+  if(!nome || !email || !senha){ toast('Preencha todos os campos', true); return; }
+  if(S.users.some(u => u.email === email)){ toast('E-mail já cadastrado', true); return; }
+  const u = {id:nid(), nome, email, senha, papel:'cliente', salario:0};
+  S.users.push(u);
+  toast('Conta criada! Entrando...');
+  login(email, senha);
+}
+let modoCadastro = false;
+function toggleCadastro(){ modoCadastro = !modoCadastro; render(); }
+
+
+function criarMesa(){
+  const numero = parseInt(val('m_num')), capacidade = parseInt(val('m_cap'));
+  if(!numero || !capacidade){ toast('Informe número e capacidade', true); return; }
+  if(S.mesas.some(m => m.numero === numero)){ toast('Já existe mesa com esse número', true); return; }
+  S.mesas.push({id:nid(), numero, capacidade, status:'livre'});
+  toast('Mesa ' + numero + ' criada'); render();
+}
+function salvarMesa(id){
+  const m = byId(S.mesas, id);
+  m.numero = parseInt(val('mn'+id)) || m.numero;
+  m.capacidade = parseInt(val('mc'+id)) || m.capacidade;
+  m.status = val('ms'+id);
+  toast('Mesa atualizada'); render();
+}
+function deletarMesa(id){
+  if(comandaAberta(id)){ toast('Não é possível: mesa tem comanda aberta', true); return; }
+  S.mesas = S.mesas.filter(m => m.id !== id);
+  toast('Mesa removida'); render();
+}
+function mudarStatusMesa(id, status){
+  byId(S.mesas, id).status = status;
+  toast('Mesa atualizada'); render();
+}
+
+
+function criarPrato(){
+  const nome = val('p_nome'), categoria = val('p_cat'), preco = num('p_preco');
+  if(!nome || !preco){ toast('Informe nome e preço', true); return; }
+  S.pratos.push({id:nid(), nome, categoria, preco, ativo:true});
+  toast('Prato criado'); render();
+}
+function salvarPrato(id){
+  const p = byId(S.pratos, id);
+  p.nome = val('pn'+id) || p.nome;
+  p.preco = parseFloat(val('pp'+id)) || p.preco;
+  p.ativo = val('pa'+id) === 'true';
+  toast('Prato atualizado'); render();
+}
+function deletarPrato(id){
+  S.pratos = S.pratos.filter(p => p.id !== id);
+  toast('Prato removido'); render();
+}
+
+
+function criarInsumo(){
+  const nome = val('i_nome'), unidade = val('i_un'), qtd = num('i_qtd'), minimo = num('i_min');
+  if(!nome){ toast('Informe o nome do insumo', true); return; }
+  S.insumos.push({id:nid(), nome, unidade, qtd, minimo});
+  toast('Insumo adicionado'); render();
+}
+function salvarInsumo(id){
+  const i = byId(S.insumos, id);
+  i.nome = val('in'+id) || i.nome;
+  i.minimo = parseFloat(val('im'+id)) || i.minimo;
+  toast('Insumo atualizado'); render();
+}
+function deletarInsumo(id){
+  S.insumos = S.insumos.filter(i => i.id !== id);
+  toast('Insumo removido'); render();
+}
+function reposicao(id){                       // UC010
+  const q = parseFloat(val('ir'+id));
+  if(!q || q <= 0){ toast('Informe a quantidade reposta', true); return; }
+  byId(S.insumos, id).qtd += q;
+  toast('Reposição registrada (+' + q + ')'); render();
+}
+function baixaExpediente(id){                 // UC011
+  const q = parseFloat(val('ib'+id));
+  const i = byId(S.insumos, id);
+  if(!q || q <= 0){ toast('Informe a quantidade consumida', true); return; }
+  if(q > i.qtd){ toast('Estoque insuficiente', true); return; }
+  i.qtd -= q;
+  toast('Baixa de expediente registrada (-' + q + ')'); render();
+}
+
+
+function reservar(mesaId){
+  const data = val('r_data'), hora = val('r_hora'), pessoas = parseInt(val('r_pess')) || 1;
+  if(!data || !hora){ toast('Escolha data e horário', true); return; }
+  const m = byId(S.mesas, mesaId);
+  if(pessoas > m.capacidade){ toast('Mesa comporta até ' + m.capacidade + ' pessoas', true); return; }
+  m.status = 'reservada';
+  S.reservas.push({id:nid(), mesaId, clienteId:S.user.id, data, hora, pessoas});
+  toast('Mesa ' + m.numero + ' reservada para ' + hora);
+  render();
+}
+function cancelarReserva(id){
+  const r = byId(S.reservas, id);
+  const m = byId(S.mesas, r.mesaId);
+  if(m.status === 'reservada') m.status = 'livre';
+  S.reservas = S.reservas.filter(x => x.id !== id);
+  toast('Reserva cancelada'); render();
+}
+
+
+function abrirComanda(mesaId, clienteId){      
+  if(comandaAberta(mesaId)){ toast('Mesa já possui comanda aberta', true); return; }
+  const c = {id:nid(), mesaId, clienteId:clienteId || null, itens:[], status:'aberta', abertaEm:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})};
+  S.comandas.push(c);
+  byId(S.mesas, mesaId).status = 'ocupada';
+  S.sel.comanda = c.id;
+  toast('Comanda aberta na mesa ' + byId(S.mesas, mesaId).numero);
+  render();
+}
+function addItem(comandaId, pratoId){          // UC020
+  const c = byId(S.comandas, comandaId);
+  if(!c || c.status !== 'aberta'){ toast('Comanda não está aberta', true); return; }
+  const ex = c.itens.find(i => i.pratoId === pratoId);
+  if(ex) ex.qtd++; else c.itens.push({pratoId, qtd:1});
+  toast(byId(S.pratos, pratoId).nome + ' adicionado');
+  render();
+}
+function remItem(comandaId, pratoId){
+  const c = byId(S.comandas, comandaId);
+  const it = c.itens.find(i => i.pratoId === pratoId);
+  if(!it) return;
+  it.qtd--;
+  if(it.qtd <= 0) c.itens = c.itens.filter(i => i.pratoId !== pratoId);
+  render();
+}
+function pagarComanda(comandaId){              // UC021
+  const c = byId(S.comandas, comandaId);
+  if(!c.itens.length){ toast('Comanda vazia', true); return; }
+  const sub = totalComanda(c);
+  c.total = sub * 1.1;
+  c.status = 'paga';
+  c.pagoEm = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  byId(S.mesas, c.mesaId).status = 'livre';
+  S.sel.comanda = null;
+  toast('Pagamento de ' + money(c.total) + ' confirmado');
+  render();
+}
+
+
+function promover(userId){                     
+  const u = byId(S.users, userId);
+  u.papel = 'garcom'; u.salario = 2100;
+  toast(u.nome + ' agora é funcionário'); render();
+}
+function rebaixar(userId){
+  const u = byId(S.users, userId);
+  u.papel = 'cliente'; u.salario = 0;
+  toast(u.nome + ' voltou a ser cliente'); render();
+}
+function pagarSalario(userId){                 // UC023
+  const u = byId(S.users, userId);
+  S.pagamentos.push({id:nid(), userId, valor:u.salario, data:hoje()});
+  toast('Salário de ' + u.nome.split(' ')[0] + ' pago: ' + money(u.salario)); render();
+}
+function solicitarFolga(){                     // UC024
+  const data = val('f_data'), motivo = val('f_motivo');
+  if(!data){ toast('Escolha a data', true); return; }
+  S.folgas.push({id:nid(), userId:S.user.id, data, motivo, status:'pendente'});
+  toast('Solicitação enviada ao admin'); render();
+}
+function responderFolga(id, status){           // UC025
+  byId(S.folgas, id).status = status;
+  toast('Folga ' + status); render();
+}
+
+
+function go(view){ S.view = view; render(); }
+function selMesa(id){ S.sel.mesa = id; S.view = 'mesa-detalhe'; render(); }
+
+const MENUS = {
+  cliente:[['reservar','Reservar'],['cardapio','Cardápio'],['comanda','Minha comanda']],
+  garcom:[['mesas','Mesas'],['comandas','Comandas'],['folgas','Minhas folgas']],
+  admin:[['dashboard','Dashboard'],['adm-mesas','Mesas'],['adm-pratos','Cardápio'],['adm-estoque','Estoque'],['adm-equipe','Equipe'],['adm-folgas','Folgas']],
+};
+
+
+function viewLogin(){
+  return `<div class="login-wrap"><div class="login-card">
+    <h1>${modoCadastro ? 'Criar conta' : 'Bem-vindo'}</h1>
+    <p class="sub">${modoCadastro ? 'Cadastro de cliente — UC001' : 'Sistema de gestão do restaurante — UC002'}</p>
+    ${modoCadastro ? `
+      <div style="margin-bottom:10px"><label>Nome completo</label><input id="c_nome" placeholder="Seu nome"></div>
+      <div style="margin-bottom:10px"><label>E-mail</label><input id="c_email" type="email" placeholder="voce@email.com"></div>
+      <div style="margin-bottom:16px"><label>Senha</label><input id="c_senha" type="password" placeholder="••••"></div>
+      <button class="btn" style="width:100%" onclick="cadastrar()">Criar conta</button>
+      <button class="btn sec" style="width:100%;margin-top:8px" onclick="toggleCadastro()">Já tenho conta</button>
+    ` : `
+      <div style="margin-bottom:10px"><label>E-mail</label><input id="email" type="email" placeholder="voce@email.com"></div>
+      <div style="margin-bottom:16px"><label>Senha</label><input id="senha" type="password" placeholder="••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn" style="width:100%" onclick="doLogin()">Entrar</button>
+      <button class="btn sec" style="width:100%;margin-top:8px" onclick="toggleCadastro()">Criar conta de cliente</button>
+      <div class="demo-accounts">
+        <div class="t">Acessos de teste (senha: 123)</div>
+        <button class="demo-btn" onclick="quickLogin('admin@rest.com')"><b>Admin</b> · Ana Souza — admin@rest.com</button>
+        <button class="demo-btn" onclick="quickLogin('garcom@rest.com')"><b>Garçom</b> · Marina Lima — garcom@rest.com</button>
+        <button class="demo-btn" onclick="quickLogin('cliente@rest.com')"><b>Cliente</b> · Carlos Melo — cliente@rest.com</button>
+      </div>
+    `}
+  </div></div>`;
+}
+
+/* ---------- CLIENTE ---------- */
+function viewReservar(){
+  const minhas = S.reservas.filter(r => r.clienteId === S.user.id);
+  const livres = S.mesas.filter(m => m.status === 'livre');
+  return `
+  <div class="page-head"><div><h2>Reservar mesa</h2><p>UC017 — escolha data, horário e uma mesa disponível</p></div></div>
+  <div class="card">
+    <div class="form-row">
+      <div><label>Data</label><input type="date" id="r_data" value="${hoje()}"></div>
+      <div><label>Horário</label><input type="time" id="r_hora" value="19:30"></div>
+      <div><label>Pessoas</label><input type="number" id="r_pess" value="2" min="1"></div>
+    </div>
+    <h3 style="margin-top:8px">Mesas disponíveis</h3>
+    ${livres.length ? `<div class="mesa-grid">${livres.map(m => `
+      <button class="mesa" style="background:${statusCor.livre}" onclick="reservar(${m.id})">
+        <div class="num">Mesa ${m.numero}</div><div class="cap">${m.capacidade} lugares</div>
+        <div class="st">Reservar</div>
+      </button>`).join('')}</div>` : '<div class="empty">Nenhuma mesa livre no momento.</div>'}
+  </div>
+  <div class="card">
+    <h3>Minhas reservas</h3>
+    ${minhas.length ? minhas.map(r => {
+      const m = byId(S.mesas, r.mesaId);
+      return `<div class="item-row"><div><div class="nm">Mesa ${m.numero}</div>
+        <div class="mt">${r.data} às ${r.hora} · ${r.pessoas} pessoa(s)</div></div>
+        <button class="btn dang sm" onclick="cancelarReserva(${r.id})">Cancelar</button></div>`;
+    }).join('') : '<div class="empty">Você ainda não tem reservas.</div>'}
+  </div>`;
+}
+
+function viewCardapioCliente(){
+  const c = S.comandas.find(x => x.clienteId === S.user.id && x.status === 'aberta');
+  const cats = [...new Set(S.pratos.filter(p => p.ativo).map(p => p.categoria))];
+  return `
+  <div class="page-head"><div><h2>Cardápio</h2><p>UC013 — consulte os pratos${c ? ' e adicione à sua comanda (UC020)' : ''}</p></div></div>
+  ${!c ? `<div class="card"><p class="hint">Você ainda não tem comanda aberta. Reserve uma mesa e abra a comanda em <b>Minha comanda</b> para pedir.</p></div>` : ''}
+  ${cats.map(cat => `<div class="card"><h3>${cat}</h3>
+    ${S.pratos.filter(p => p.ativo && p.categoria === cat).map(p => `
+      <div class="item-row"><div><div class="nm">${p.nome}</div><div class="mt">${money(p.preco)}</div></div>
+      ${c ? `<button class="btn sm" onclick="addItem(${c.id}, ${p.id})">Adicionar</button>` : '<span class="pill muted">Disponível</span>'}</div>
+    `).join('')}</div>`).join('')}`;
+}
+
+function viewComandaCliente(){
+  const c = S.comandas.find(x => x.clienteId === S.user.id && x.status === 'aberta');
+  const minhaReserva = S.reservas.find(r => r.clienteId === S.user.id);
+  const pagas = S.comandas.filter(x => x.clienteId === S.user.id && x.status === 'paga');
+
+  if(!c){
+    return `
+    <div class="page-head"><div><h2>Minha comanda</h2><p>UC018 · UC019 · UC021</p></div></div>
+    <div class="card">
+      ${minhaReserva
+        ? `<h3>Abrir comanda</h3><p class="hint" style="margin-bottom:14px">Você tem reserva na mesa ${byId(S.mesas, minhaReserva.mesaId).numero}. Abra a comanda para começar a pedir.</p>
+           <button class="btn" onclick="abrirComanda(${minhaReserva.mesaId}, ${S.user.id})">Abrir comanda na mesa ${byId(S.mesas, minhaReserva.mesaId).numero}</button>`
+        : `<div class="empty">Nenhuma comanda aberta. Faça uma reserva primeiro.</div>`}
+    </div>
+    ${pagas.length ? `<div class="card"><h3>Histórico</h3>${pagas.map(p => `
+      <div class="item-row"><div><div class="nm">Mesa ${byId(S.mesas,p.mesaId).numero}</div><div class="mt">Pago às ${p.pagoEm}</div></div>
+      <span class="pill success">${money(p.total)}</span></div>`).join('')}</div>` : ''}`;
+  }
+
+  const sub = totalComanda(c), serv = sub * 0.1;
+  return `
+  <div class="page-head"><div><h2>Minha comanda</h2><p>Mesa ${byId(S.mesas,c.mesaId).numero} · aberta às ${c.abertaEm}</p></div>
+  <span class="pill primary">Aberta</span></div>
+  <div class="card">
+    ${c.itens.length ? c.itens.map(i => {
+      const p = byId(S.pratos, i.pratoId);
+      return `<div class="item-row"><div><div class="nm">${p.nome} ×${i.qtd}</div><div class="mt">${money(p.preco)} un.</div></div>
+      <div style="display:flex;gap:6px;align-items:center"><span>${money(p.preco*i.qtd)}</span>
+      <button class="btn sec sm" onclick="remItem(${c.id},${p.id})">−</button>
+      <button class="btn sm" onclick="addItem(${c.id},${p.id})">+</button></div></div>`;
+    }).join('') : '<div class="empty">Nenhum item ainda — veja o Cardápio para pedir.</div>'}
+    ${c.itens.length ? `
+      <div class="total-row"><span>Subtotal</span><span>${money(sub)}</span></div>
+      <div class="total-row"><span>Serviço (10%)</span><span>${money(serv)}</span></div>
+      <div class="total-row big"><span>Total</span><span>${money(sub+serv)}</span></div>
+      <button class="btn" style="width:100%;margin-top:12px" onclick="pagarComanda(${c.id})">Pagar ${money(sub+serv)}</button>` : ''}
+  </div>`;
+}
+
+
+function viewMesas(){
+  return `
+  <div class="page-head"><div><h2>Mapa de mesas</h2><p>UC004 · UC006 — toque numa mesa para operar</p></div></div>
+  <div class="mesa-grid">${S.mesas.map(m => {
+    const c = comandaAberta(m.id);
+    return `<button class="mesa" style="background:${statusCor[m.status]};${m.status==='reservada'?'color:var(--text)':''}" onclick="selMesa(${m.id})">
+      <div class="num">Mesa ${m.numero}</div><div class="cap">${m.capacidade} lugares</div>
+      <div class="st">${m.status}${c ? ' · ' + money(totalComanda(c)) : ''}</div>
+    </button>`;
+  }).join('')}</div>`;
+}
+
+function viewMesaDetalhe(){
+  const m = byId(S.mesas, S.sel.mesa);
+  if(!m) return viewMesas();
+  const c = comandaAberta(m.id);
+  const sub = c ? totalComanda(c) : 0;
+  return `
+  <div class="page-head"><div><h2>Mesa ${m.numero}</h2><p>${m.capacidade} lugares · status: ${m.status}</p></div>
+  <button class="btn sec" onclick="go('mesas')">← Voltar</button></div>
+
+  <div class="card">
+    <h3>Status da mesa (UC006)</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${['livre','ocupada','reservada'].map(s => `
+        <button class="btn ${m.status===s?'':'sec'} sm" onclick="mudarStatusMesa(${m.id},'${s}')">${s}</button>`).join('')}
+    </div>
+  </div>
+
+  ${!c ? `<div class="card"><h3>Comanda</h3>
+    <p class="hint" style="margin-bottom:12px">Nenhuma comanda aberta nesta mesa.</p>
+    <button class="btn" onclick="abrirComanda(${m.id})">Abrir comanda (UC019)</button></div>`
+  : `
+  <div class="grid-2">
+    <div class="card"><h3>Comanda aberta · ${c.abertaEm}</h3>
+      ${c.itens.length ? c.itens.map(i => {
+        const p = byId(S.pratos, i.pratoId);
+        return `<div class="item-row"><div><div class="nm">${p.nome} ×${i.qtd}</div><div class="mt">${money(p.preco)} un.</div></div>
+        <div style="display:flex;gap:6px;align-items:center">
+        <button class="btn sec sm" onclick="remItem(${c.id},${p.id})">−</button>
+        <button class="btn sm" onclick="addItem(${c.id},${p.id})">+</button></div></div>`;
+      }).join('') : '<div class="empty">Comanda vazia — adicione itens ao lado.</div>'}
+      <div class="total-row"><span>Subtotal</span><span>${money(sub)}</span></div>
+      <div class="total-row"><span>Serviço (10%)</span><span>${money(sub*0.1)}</span></div>
+      <div class="total-row big"><span>Total</span><span>${money(sub*1.1)}</span></div>
+      <button class="btn" style="width:100%;margin-top:12px" onclick="pagarComanda(${c.id})">Fechar e registrar pagamento (UC021)</button>
+    </div>
+    <div class="card"><h3>Adicionar do cardápio (UC020)</h3>
+      ${S.pratos.filter(p => p.ativo).map(p => `
+        <div class="item-row"><div><div class="nm">${p.nome}</div><div class="mt">${p.categoria} · ${money(p.preco)}</div></div>
+        <button class="btn sm" onclick="addItem(${c.id},${p.id})">+</button></div>`).join('')}
+    </div>
+  </div>`}`;
+}
+
+function viewComandas(){
+  const abertas = S.comandas.filter(c => c.status === 'aberta');
+  const pagas = S.comandas.filter(c => c.status === 'paga');
+  return `
+  <div class="page-head"><div><h2>Comandas</h2><p>UC018 — abertas e histórico do dia</p></div></div>
+  <div class="card"><h3>Abertas (${abertas.length})</h3>
+    ${abertas.length ? abertas.map(c => `
+      <div class="item-row"><div><div class="nm">Mesa ${byId(S.mesas,c.mesaId).numero}</div>
+      <div class="mt">${c.itens.length} item(ns) · aberta às ${c.abertaEm}</div></div>
+      <div style="display:flex;gap:8px;align-items:center"><span class="pill primary">${money(totalComanda(c))}</span>
+      <button class="btn sm" onclick="selMesa(${c.mesaId})">Abrir</button></div></div>`).join('')
+    : '<div class="empty">Nenhuma comanda aberta.</div>'}
+  </div>
+  <div class="card"><h3>Pagas hoje (${pagas.length})</h3>
+    ${pagas.length ? pagas.map(c => `
+      <div class="item-row"><div><div class="nm">Mesa ${byId(S.mesas,c.mesaId).numero}</div>
+      <div class="mt">Pago às ${c.pagoEm}</div></div><span class="pill success">${money(c.total)}</span></div>`).join('')
+    : '<div class="empty">Nenhum pagamento registrado ainda.</div>'}
+  </div>`;
+}
+
+function viewFolgasGarcom(){
+  const minhas = S.folgas.filter(f => f.userId === S.user.id);
+  const pillOf = s => s==='aprovada' ? 'success' : s==='recusada' ? 'error' : 'warning';
+  return `
+  <div class="page-head"><div><h2>Minhas folgas</h2><p>UC024 — solicite e acompanhe o status</p></div></div>
+  <div class="card"><h3>Nova solicitação</h3>
+    <div class="form-row">
+      <div><label>Data desejada</label><input type="date" id="f_data" value="${hoje()}"></div>
+      <div style="flex:2"><label>Motivo (opcional)</label><input id="f_motivo" placeholder="Ex.: consulta médica"></div>
+      <div style="flex:0"><button class="btn" onclick="solicitarFolga()">Solicitar</button></div>
+    </div>
+  </div>
+  <div class="card"><h3>Histórico</h3>
+    ${minhas.length ? minhas.map(f => `
+      <div class="item-row"><div><div class="nm">${f.data}</div><div class="mt">${f.motivo || 'Sem motivo informado'}</div></div>
+      <span class="pill ${pillOf(f.status)}">${f.status}</span></div>`).join('')
+    : '<div class="empty">Nenhuma solicitação ainda.</div>'}
+  </div>`;
+}
+
+
+function viewDashboard(){
+  const fat = S.comandas.filter(c => c.status==='paga').reduce((s,c) => s + c.total, 0);
+  const abertas = S.comandas.filter(c => c.status==='aberta').length;
+  const criticos = S.insumos.filter(i => i.qtd <= i.minimo).length;
+  const ocupadas = S.mesas.filter(m => m.status==='ocupada').length;
+  const pendentes = S.folgas.filter(f => f.status==='pendente').length;
+  return `
+  <div class="page-head"><div><h2>Dashboard</h2><p>Visão geral da operação</p></div></div>
+  <div class="stats">
+    <div class="stat"><div class="n">${money(fat)}</div><div class="l">Faturamento do dia</div></div>
+    <div class="stat"><div class="n">${abertas}</div><div class="l">Comandas abertas</div></div>
+    <div class="stat"><div class="n">${ocupadas}/${S.mesas.length}</div><div class="l">Mesas ocupadas</div></div>
+    <div class="stat"><div class="n" style="color:${criticos?'var(--error)':'inherit'}">${criticos}</div><div class="l">Insumos críticos</div></div>
+    <div class="stat"><div class="n" style="color:${pendentes?'var(--warning)':'inherit'}">${pendentes}</div><div class="l">Folgas pendentes</div></div>
+  </div>
+  <div class="card"><h3>Mesas em tempo real</h3>
+    <table><tr><th>Mesa</th><th>Status</th><th>Comanda</th></tr>
+    ${S.mesas.map(m => { const c = comandaAberta(m.id);
+      return `<tr><td>Mesa ${m.numero}</td><td><span class="pill ${statusPill[m.status]}">${m.status}</span></td>
+      <td>${c ? money(totalComanda(c)) + ' · ' + c.itens.length + ' item(ns)' : '—'}</td></tr>`;}).join('')}
+    </table>
+  </div>
+  ${criticos ? `<div class="card"><h3>Atenção no estoque</h3>
+    ${S.insumos.filter(i => i.qtd <= i.minimo).map(i => `
+      <div class="item-row"><div><div class="nm">${i.nome}</div><div class="mt">Mínimo: ${i.minimo} ${i.unidade}</div></div>
+      <span class="pill error">${i.qtd} ${i.unidade}</span></div>`).join('')}</div>` : ''}`;
+}
+
+function viewAdmMesas(){
+  return `
+  <div class="page-head"><div><h2>Gestão de mesas</h2><p>UC003 · UC004 · UC005 · UC006</p></div></div>
+  <div class="card"><h3>Nova mesa (UC003)</h3>
+    <div class="form-row">
+      <div><label>Número</label><input type="number" id="m_num" placeholder="7"></div>
+      <div><label>Capacidade</label><input type="number" id="m_cap" placeholder="4"></div>
+      <div style="flex:0"><button class="btn" onclick="criarMesa()">Criar mesa</button></div>
+    </div>
+  </div>
+  <div class="card"><h3>Mesas cadastradas (${S.mesas.length})</h3>
+    <table><tr><th>Número</th><th>Capacidade</th><th>Status</th><th></th></tr>
+    ${S.mesas.map(m => `<tr>
+      <td><input id="mn${m.id}" type="number" value="${m.numero}" style="width:70px"></td>
+      <td><input id="mc${m.id}" type="number" value="${m.capacidade}" style="width:70px"></td>
+      <td><select id="ms${m.id}">${['livre','ocupada','reservada'].map(s => `<option ${m.status===s?'selected':''}>${s}</option>`).join('')}</select></td>
+      <td style="display:flex;gap:6px"><button class="btn sm" onclick="salvarMesa(${m.id})">Salvar</button>
+      <button class="btn dang sm" onclick="deletarMesa(${m.id})">Excluir</button></td></tr>`).join('')}
+    </table>
+  </div>`;
+}
+
+function viewAdmPratos(){
+  return `
+  <div class="page-head"><div><h2>Gestão de cardápio</h2><p>UC012-B · UC013 · UC014 · UC015 · UC016</p></div></div>
+  <div class="card"><h3>Novo prato</h3>
+    <div class="form-row">
+      <div style="flex:2"><label>Nome</label><input id="p_nome" placeholder="Ex.: Fettuccine alfredo"></div>
+      <div><label>Categoria</label><select id="p_cat">
+        <option>Entradas</option><option selected>Principais</option><option>Sobremesas</option><option>Bebidas</option></select></div>
+      <div><label>Preço (R$)</label><input type="number" id="p_preco" step="0.01" placeholder="45.00"></div>
+      <div style="flex:0"><button class="btn" onclick="criarPrato()">Criar</button></div>
+    </div>
+  </div>
+  <div class="card"><h3>Pratos (${S.pratos.length})</h3>
+    <table><tr><th>Nome</th><th>Categoria</th><th>Preço</th><th>Status</th><th></th></tr>
+    ${S.pratos.map(p => `<tr>
+      <td><input id="pn${p.id}" value="${p.nome}"></td>
+      <td>${p.categoria}</td>
+      <td><input id="pp${p.id}" type="number" step="0.01" value="${p.preco}" style="width:90px"></td>
+      <td><select id="pa${p.id}"><option value="true" ${p.ativo?'selected':''}>Ativo</option><option value="false" ${!p.ativo?'selected':''}>Pausado</option></select></td>
+      <td style="display:flex;gap:6px"><button class="btn sm" onclick="salvarPrato(${p.id})">Salvar</button>
+      <button class="btn dang sm" onclick="deletarPrato(${p.id})">Excluir</button></td></tr>`).join('')}
+    </table>
+  </div>`;
+}
+
+function viewAdmEstoque(){
+  return `
+  <div class="page-head"><div><h2>Estoque de insumos</h2><p>UC007–UC012 — cadastro, reposição e baixa de expediente</p></div></div>
+  <div class="card"><h3>Novo insumo (UC007)</h3>
+    <div class="form-row">
+      <div style="flex:2"><label>Nome</label><input id="i_nome" placeholder="Ex.: Queijo parmesão"></div>
+      <div><label>Unidade</label><select id="i_un"><option>kg</option><option>g</option><option>l</option><option>un</option></select></div>
+      <div><label>Qtd. inicial</label><input type="number" id="i_qtd" value="0" step="0.1"></div>
+      <div><label>Mínimo</label><input type="number" id="i_min" value="1" step="0.1"></div>
+      <div style="flex:0"><button class="btn" onclick="criarInsumo()">Adicionar</button></div>
+    </div>
+  </div>
+  <div class="card"><h3>Insumos (${S.insumos.length})</h3>
+    <table><tr><th>Insumo</th><th>Estoque</th><th>Mínimo</th><th>Reposição (UC010)</th><th>Baixa expediente (UC011)</th><th></th></tr>
+    ${S.insumos.map(i => {
+      const critico = i.qtd <= i.minimo;
+      return `<tr>
+      <td><input id="in${i.id}" value="${i.nome}" style="width:130px"></td>
+      <td><span class="pill ${critico?'error':'success'}">${i.qtd} ${i.unidade}</span></td>
+      <td><input id="im${i.id}" type="number" value="${i.minimo}" step="0.1" style="width:70px"></td>
+      <td style="display:flex;gap:5px"><input id="ir${i.id}" type="number" step="0.1" placeholder="+qtd" style="width:75px">
+        <button class="btn sm" onclick="reposicao(${i.id})">Repor</button></td>
+      <td style="display:flex;gap:5px"><input id="ib${i.id}" type="number" step="0.1" placeholder="-qtd" style="width:75px">
+        <button class="btn sec sm" onclick="baixaExpediente(${i.id})">Dar baixa</button></td>
+      <td style="display:flex;gap:6px"><button class="btn sm" onclick="salvarInsumo(${i.id})">Salvar</button>
+        <button class="btn dang sm" onclick="deletarInsumo(${i.id})">Excluir</button></td></tr>`;
+    }).join('')}
+    </table>
+  </div>`;
+}
+
+function viewAdmEquipe(){
+  const funcs = S.users.filter(u => u.papel === 'garcom');
+  const clientes = S.users.filter(u => u.papel === 'cliente');
+  return `
+  <div class="page-head"><div><h2>Equipe</h2><p>UC022 · UC023 — promover usuários e pagar salários</p></div></div>
+  <div class="card"><h3>Funcionários (${funcs.length})</h3>
+    <table><tr><th>Nome</th><th>E-mail</th><th>Salário</th><th>Último pagamento</th><th></th></tr>
+    ${funcs.map(u => {
+      const pg = S.pagamentos.filter(p => p.userId === u.id).slice(-1)[0];
+      return `<tr><td>${u.nome}</td><td>${u.email}</td><td>${money(u.salario)}</td>
+      <td>${pg ? pg.data : '—'}</td>
+      <td style="display:flex;gap:6px"><button class="btn sm" onclick="pagarSalario(${u.id})">Pagar salário</button>
+      <button class="btn sec sm" onclick="rebaixar(${u.id})">Remover cargo</button></td></tr>`;
+    }).join('')}
+    </table>
+  </div>
+  <div class="card"><h3>Clientes cadastrados (${clientes.length})</h3>
+    <p class="hint" style="margin-bottom:12px">Promova um cliente para funcionário (garçom).</p>
+    <table><tr><th>Nome</th><th>E-mail</th><th></th></tr>
+    ${clientes.map(u => `<tr><td>${u.nome}</td><td>${u.email}</td>
+    <td><button class="btn sm" onclick="promover(${u.id})">Tornar funcionário</button></td></tr>`).join('')}
+    </table>
+  </div>
+  ${S.pagamentos.length ? `<div class="card"><h3>Folha de pagamento</h3>
+    ${S.pagamentos.map(p => `<div class="item-row"><div><div class="nm">${byId(S.users,p.userId).nome}</div>
+    <div class="mt">${p.data}</div></div><span class="pill success">${money(p.valor)}</span></div>`).join('')}</div>` : ''}`;
+}
+
+function viewAdmFolgas(){
+  const pend = S.folgas.filter(f => f.status === 'pendente');
+  const resp = S.folgas.filter(f => f.status !== 'pendente');
+  return `
+  <div class="page-head"><div><h2>Solicitações de folga</h2><p>UC025 — aprovar ou recusar</p></div></div>
+  <div class="card"><h3>Pendentes (${pend.length})</h3>
+    ${pend.length ? pend.map(f => `<div class="item-row">
+      <div><div class="nm">${byId(S.users,f.userId).nome}</div><div class="mt">${f.data} · ${f.motivo || 'sem motivo'}</div></div>
+      <div style="display:flex;gap:6px"><button class="btn sm" onclick="responderFolga(${f.id},'aprovada')">Aprovar</button>
+      <button class="btn dang sm" onclick="responderFolga(${f.id},'recusada')">Recusar</button></div></div>`).join('')
+    : '<div class="empty">Nenhuma solicitação pendente.</div>'}
+  </div>
+  ${resp.length ? `<div class="card"><h3>Respondidas</h3>
+    ${resp.map(f => `<div class="item-row"><div><div class="nm">${byId(S.users,f.userId).nome}</div>
+    <div class="mt">${f.data}</div></div><span class="pill ${f.status==='aprovada'?'success':'error'}">${f.status}</span></div>`).join('')}
+  </div>` : ''}`;
+}
+
+
+const VIEWS = {
+  reservar:viewReservar, cardapio:viewCardapioCliente, comanda:viewComandaCliente,
+  mesas:viewMesas, 'mesa-detalhe':viewMesaDetalhe, comandas:viewComandas, folgas:viewFolgasGarcom,
+  dashboard:viewDashboard, 'adm-mesas':viewAdmMesas, 'adm-pratos':viewAdmPratos,
+  'adm-estoque':viewAdmEstoque, 'adm-equipe':viewAdmEquipe, 'adm-folgas':viewAdmFolgas,
+};
+
+function render(){
+  const root = $('root');
+  if(!S.user){ root.innerHTML = viewLogin(); return; }
+  const menu = MENUS[S.user.papel];
+  const active = S.view === 'mesa-detalhe' ? 'mesas' : S.view;
+  root.innerHTML = `
+    <div class="topbar">
+      <div class="brand">🍴 Restaurante</div>
+      <div class="user"><span>${S.user.nome}</span>
+        <span class="role-badge">${S.user.papel}</span>
+        <button class="btn sec sm" style="background:rgba(255,255,255,.12);color:#fff;border-color:transparent" onclick="logout()">Sair</button></div>
+    </div>
+    <div class="nav">${menu.map(([v,l]) => `<button class="${active===v?'active':''}" onclick="go('${v}')">${l}</button>`).join('')}</div>
+    <main>${(VIEWS[S.view] || VIEWS[menu[0][0]])()}</main>`;
+}
+
+render();
+</script>
+</body>
+</html>
