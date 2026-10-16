@@ -17,7 +17,6 @@
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
 h1,h2,h3{font-family:'Poppins',sans-serif;letter-spacing:-0.01em}
 
-
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
 .login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:400px;box-shadow:0 12px 32px rgba(31,27,22,.08)}
 .login-card h1{font-size:24px;margin-bottom:4px}
@@ -27,7 +26,6 @@ h1,h2,h3{font-family:'Poppins',sans-serif;letter-spacing:-0.01em}
 .demo-btn{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:6px;cursor:pointer;font-size:12.5px;font-family:inherit}
 .demo-btn:hover{border-color:var(--primary)}
 .demo-btn b{font-family:'Poppins',sans-serif}
-
 
 .topbar{background:var(--secondary);color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
 .topbar .brand{font-family:'Poppins',sans-serif;font-weight:700;font-size:16px}
@@ -40,7 +38,6 @@ main{max-width:1060px;margin:0 auto;padding:28px 20px 80px}
 .page-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;gap:16px;flex-wrap:wrap}
 .page-head h2{font-size:21px}
 .page-head p{color:var(--text-2);font-size:13px;margin-top:3px}
-
 
 .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:18px}
 .card h3{font-size:15px;margin-bottom:14px}
@@ -85,6 +82,7 @@ td input,td select{padding:6px 8px;font-size:12.5px}
 .hint{font-size:12px;color:var(--text-2);line-height:1.5}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media(max-width:720px){.grid-2{grid-template-columns:1fr}}
+.demo-accounts{display:none}
 </style>
 </head>
 <body>
@@ -280,7 +278,7 @@ function cancelarReserva(id){
 }
 
 
-function abrirComanda(mesaId, clienteId){      
+function abrirComanda(mesaId, clienteId){
   if(comandaAberta(mesaId)){ toast('Mesa já possui comanda aberta', true); return; }
   const c = {id:nid(), mesaId, clienteId:clienteId || null, itens:[], status:'aberta', abertaEm:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})};
   S.comandas.push(c);
@@ -319,7 +317,7 @@ function pagarComanda(comandaId){              // UC021
 }
 
 
-function promover(userId){                     
+function promover(userId){
   const u = byId(S.users, userId);
   u.papel = 'garcom'; u.salario = 2100;
   toast(u.nome + ' agora é funcionário'); render();
@@ -334,25 +332,17 @@ function pagarSalario(userId){                 // UC023
   S.pagamentos.push({id:nid(), userId, valor:u.salario, data:hoje()});
   toast('Salário de ' + u.nome.split(' ')[0] + ' pago: ' + money(u.salario)); render();
 }
-function solicitarFolga(){                     // UC024
-  const data = val('f_data'), motivo = val('f_motivo');
-  if(!data){ toast('Escolha a data', true); return; }
-  S.folgas.push({id:nid(), userId:S.user.id, data, motivo, status:'pendente'});
-  toast('Solicitação enviada ao admin'); render();
-}
-function responderFolga(id, status){           // UC025
-  byId(S.folgas, id).status = status;
-  toast('Folga ' + status); render();
-}
+
+
 
 
 function go(view){ S.view = view; render(); }
 function selMesa(id){ S.sel.mesa = id; S.view = 'mesa-detalhe'; render(); }
 
 const MENUS = {
-  cliente:[['reservar','Reservar'],['cardapio','Cardápio'],['comanda','Minha comanda']],
-  garcom:[['mesas','Mesas'],['comandas','Comandas'],['folgas','Minhas folgas']],
-  admin:[['dashboard','Dashboard'],['adm-mesas','Mesas'],['adm-pratos','Cardápio'],['adm-estoque','Estoque'],['adm-equipe','Equipe'],['adm-folgas','Folgas']],
+  cliente:[['reservar','Reservar'],['cardapio','Cardápio']],
+  garcom:[['mesas','Mesas'],['comandas','Comandas']],
+  admin:[['dashboard','Dashboard'],['adm-mesas','Mesas'],['adm-pratos','Cardápio'],['adm-estoque','Estoque'],['adm-equipe','Equipe']],
 };
 
 
@@ -404,9 +394,10 @@ function viewReservar(){
     <h3>Minhas reservas</h3>
     ${minhas.length ? minhas.map(r => {
       const m = byId(S.mesas, r.mesaId);
-      return `<div class="item-row"><div><div class="nm">Mesa ${m.numero}</div>
-        <div class="mt">${r.data} às ${r.hora} · ${r.pessoas} pessoa(s)</div></div>
-        <button class="btn dang sm" onclick="cancelarReserva(${r.id})">Cancelar</button></div>`;
+            return `<div class="item-row"><div><div class="nm">Mesa ${m ? m.numero : '#' + r.mesaId}</div>
+        <div class="mt">${r.data.split('-').reverse().join('/')} · ${r.pessoas} pessoa(s)</div></div>
+        <div style="display:flex;gap:8px;align-items:center"><span class="pill accent">🕒 ${r.hora}</span>
+        <button class="btn dang sm" onclick="cancelarReserva(${r.id})">Cancelar</button></div></div>`;
     }).join('') : '<div class="empty">Você ainda não tem reservas.</div>'}
   </div>`;
 }
@@ -419,7 +410,7 @@ function viewCardapioCliente(){
   ${!c ? `<div class="card"><p class="hint">Você ainda não tem comanda aberta. Reserve uma mesa e abra a comanda em <b>Minha comanda</b> para pedir.</p></div>` : ''}
   ${cats.map(cat => `<div class="card"><h3>${cat}</h3>
     ${S.pratos.filter(p => p.ativo && p.categoria === cat).map(p => `
-      <div class="item-row"><div><div class="nm">${p.nome}</div><div class="mt">${money(p.preco)}</div></div>
+      <div class="item-row"><div><div class="nm">${p.nome}</div><div class="mt">${money(p.preco)}</div>${p.descricao ? `<div class="mt">${p.descricao}</div>` : ''}</div>
       ${c ? `<button class="btn sm" onclick="addItem(${c.id}, ${p.id})">Adicionar</button>` : '<span class="pill muted">Disponível</span>'}</div>
     `).join('')}</div>`).join('')}`;
 }
@@ -513,7 +504,7 @@ function viewMesaDetalhe(){
     </div>
     <div class="card"><h3>Adicionar do cardápio (UC020)</h3>
       ${S.pratos.filter(p => p.ativo).map(p => `
-        <div class="item-row"><div><div class="nm">${p.nome}</div><div class="mt">${p.categoria} · ${money(p.preco)}</div></div>
+        <div class="item-row"><div><div class="nm">${p.nome}</div><div class="mt">${p.categoria} · ${money(p.preco)}${p.descricao ? ' · ' + p.descricao : ''}</div></div>
         <button class="btn sm" onclick="addItem(${c.id},${p.id})">+</button></div>`).join('')}
     </div>
   </div>`}`;
@@ -540,25 +531,7 @@ function viewComandas(){
   </div>`;
 }
 
-function viewFolgasGarcom(){
-  const minhas = S.folgas.filter(f => f.userId === S.user.id);
-  const pillOf = s => s==='aprovada' ? 'success' : s==='recusada' ? 'error' : 'warning';
-  return `
-  <div class="page-head"><div><h2>Minhas folgas</h2><p>UC024 — solicite e acompanhe o status</p></div></div>
-  <div class="card"><h3>Nova solicitação</h3>
-    <div class="form-row">
-      <div><label>Data desejada</label><input type="date" id="f_data" value="${hoje()}"></div>
-      <div style="flex:2"><label>Motivo (opcional)</label><input id="f_motivo" placeholder="Ex.: consulta médica"></div>
-      <div style="flex:0"><button class="btn" onclick="solicitarFolga()">Solicitar</button></div>
-    </div>
-  </div>
-  <div class="card"><h3>Histórico</h3>
-    ${minhas.length ? minhas.map(f => `
-      <div class="item-row"><div><div class="nm">${f.data}</div><div class="mt">${f.motivo || 'Sem motivo informado'}</div></div>
-      <span class="pill ${pillOf(f.status)}">${f.status}</span></div>`).join('')
-    : '<div class="empty">Nenhuma solicitação ainda.</div>'}
-  </div>`;
-}
+
 
 
 function viewDashboard(){
@@ -566,7 +539,6 @@ function viewDashboard(){
   const abertas = S.comandas.filter(c => c.status==='aberta').length;
   const criticos = S.insumos.filter(i => i.qtd <= i.minimo).length;
   const ocupadas = S.mesas.filter(m => m.status==='ocupada').length;
-  const pendentes = S.folgas.filter(f => f.status==='pendente').length;
   return `
   <div class="page-head"><div><h2>Dashboard</h2><p>Visão geral da operação</p></div></div>
   <div class="stats">
@@ -574,7 +546,6 @@ function viewDashboard(){
     <div class="stat"><div class="n">${abertas}</div><div class="l">Comandas abertas</div></div>
     <div class="stat"><div class="n">${ocupadas}/${S.mesas.length}</div><div class="l">Mesas ocupadas</div></div>
     <div class="stat"><div class="n" style="color:${criticos?'var(--error)':'inherit'}">${criticos}</div><div class="l">Insumos críticos</div></div>
-    <div class="stat"><div class="n" style="color:${pendentes?'var(--warning)':'inherit'}">${pendentes}</div><div class="l">Folgas pendentes</div></div>
   </div>
   <div class="card"><h3>Mesas em tempo real</h3>
     <table><tr><th>Mesa</th><th>Status</th><th>Comanda</th></tr>
@@ -618,16 +589,18 @@ function viewAdmPratos(){
     <div class="form-row">
       <div style="flex:2"><label>Nome</label><input id="p_nome" placeholder="Ex.: Fettuccine alfredo"></div>
       <div><label>Categoria</label><select id="p_cat">
-        <option>Entradas</option><option selected>Principais</option><option>Sobremesas</option><option>Bebidas</option></select></div>
+       <option>Entradas</option><option selected>Principais</option><option>Porções</option><option>Sobremesas</option><option>Bebidas</option></select></div>
       <div><label>Preço (R$)</label><input type="number" id="p_preco" step="0.01" placeholder="45.00"></div>
+      <div style="flex-basis:100%"><label>Descrição (opcional)</label><input id="p_desc" placeholder="Ex.: Arroz arbóreo cremoso com funghi e parmesão"></div>
       <div style="flex:0"><button class="btn" onclick="criarPrato()">Criar</button></div>
     </div>
   </div>
   <div class="card"><h3>Pratos (${S.pratos.length})</h3>
-    <table><tr><th>Nome</th><th>Categoria</th><th>Preço</th><th>Status</th><th></th></tr>
+    <table><tr><th>Nome</th><th>Categoria</th><th>Descrição</th><th>Preço</th><th>Status</th><th></th></tr>
     ${S.pratos.map(p => `<tr>
       <td><input id="pn${p.id}" value="${p.nome}"></td>
       <td>${p.categoria}</td>
+      <td><input id="pd${p.id}" value="${(p.descricao||'').replace(/"/g,'&quot;')}" placeholder="Sem descrição"></td>
       <td><input id="pp${p.id}" type="number" step="0.01" value="${p.preco}" style="width:90px"></td>
       <td><select id="pa${p.id}"><option value="true" ${p.ativo?'selected':''}>Ativo</option><option value="false" ${!p.ativo?'selected':''}>Pausado</option></select></td>
       <td style="display:flex;gap:6px"><button class="btn sm" onclick="salvarPrato(${p.id})">Salvar</button>
@@ -695,30 +668,13 @@ function viewAdmEquipe(){
     <div class="mt">${p.data}</div></div><span class="pill success">${money(p.valor)}</span></div>`).join('')}</div>` : ''}`;
 }
 
-function viewAdmFolgas(){
-  const pend = S.folgas.filter(f => f.status === 'pendente');
-  const resp = S.folgas.filter(f => f.status !== 'pendente');
-  return `
-  <div class="page-head"><div><h2>Solicitações de folga</h2><p>UC025 — aprovar ou recusar</p></div></div>
-  <div class="card"><h3>Pendentes (${pend.length})</h3>
-    ${pend.length ? pend.map(f => `<div class="item-row">
-      <div><div class="nm">${byId(S.users,f.userId).nome}</div><div class="mt">${f.data} · ${f.motivo || 'sem motivo'}</div></div>
-      <div style="display:flex;gap:6px"><button class="btn sm" onclick="responderFolga(${f.id},'aprovada')">Aprovar</button>
-      <button class="btn dang sm" onclick="responderFolga(${f.id},'recusada')">Recusar</button></div></div>`).join('')
-    : '<div class="empty">Nenhuma solicitação pendente.</div>'}
-  </div>
-  ${resp.length ? `<div class="card"><h3>Respondidas</h3>
-    ${resp.map(f => `<div class="item-row"><div><div class="nm">${byId(S.users,f.userId).nome}</div>
-    <div class="mt">${f.data}</div></div><span class="pill ${f.status==='aprovada'?'success':'error'}">${f.status}</span></div>`).join('')}
-  </div>` : ''}`;
-}
-
+  
 
 const VIEWS = {
   reservar:viewReservar, cardapio:viewCardapioCliente, comanda:viewComandaCliente,
-  mesas:viewMesas, 'mesa-detalhe':viewMesaDetalhe, comandas:viewComandas, folgas:viewFolgasGarcom,
+  mesas:viewMesas, 'mesa-detalhe':viewMesaDetalhe, comandas:viewComandas,
   dashboard:viewDashboard, 'adm-mesas':viewAdmMesas, 'adm-pratos':viewAdmPratos,
-  'adm-estoque':viewAdmEstoque, 'adm-equipe':viewAdmEquipe, 'adm-folgas':viewAdmFolgas,
+  'adm-estoque':viewAdmEstoque, 'adm-equipe':viewAdmEquipe,
 };
 
 function render(){
@@ -739,5 +695,437 @@ function render(){
 
 render();
 </script>
+<script>
+
+const API_URL = (window.__API_URL__ || '').replace(/\/+$/, '');  // vem do .env via server.js
+let TOKEN = null;
+
+async function api(method, path, body){
+  if(!API_URL) throw new Error('API_URL não configurada. Rode com "npm start" (veja o .env).');
+  const h = {'Content-Type':'application/json'};
+  if(TOKEN) h.Authorization = 'Bearer ' + TOKEN;
+  const r = await fetch(API_URL + path, {method, headers:h, body: body ? JSON.stringify(body) : undefined});
+  if(r.status === 401 && TOKEN && !path.startsWith('/auth')){ logout(); throw new Error('Sessão expirada. Entre novamente.'); }
+  if(!r.ok){
+    let msg = ''; try{ const j = await r.json(); msg = j.message || j.error || ''; }catch(e){}
+    const err = new Error(msg || (method + ' ' + path + ' falhou (' + r.status + ')')); err.status = r.status; throw err;
+  }
+  const t = await r.text();
+  return t ? JSON.parse(t) : null;
+}
+const run = fn => async (...a) => { try{ await fn(...a); }catch(e){ console.error(e); toast(e.message, true); } };
+const hm = d => d ? new Date(d).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
+
+/* ---- back -> front ---- */
+const toMesa = o => {
+  const disp = o.available ?? o.disponivel;
+  const livre = disp === undefined
+    ? String(o.status || 'livre').toLowerCase() === 'livre'
+    : String(disp) === 'true';
+  const status = livre ? 'livre' : (S.reservas.some(r => r.mesaId === o.id) ? 'reservada' : 'ocupada');
+  return {id:o.id, numero:o.number ?? o.numero, capacidade:o.seating_capacity ?? o.capacidade, status};
+};
+const toPrato = o => ({id:o.id, nome:o.nome, preco:Number(o.preco||0), categoria:o.categoria||'', ativo:o.disponivel !== false,
+  descricao:o.descricao ?? o.description ?? '', imagemUrl:o.imagemUrl||'', categoryId:o.categoryId});
+const toInsumo = o => ({id:o.id, nome:o.name, unidade:o.unit, qtd:Number(o.quantity||0), minimo:Number(o.minimumStock||0),
+  perecivel:!!o.perishable, validade:o.expiration_date||null});
+const toCategoria = o => ({id:o.id, nome:o.type});
+const toComanda = (o, prev) => ({id:o.id, mesaId:o.tableId, waiterId:o.waiterId, clienteId:prev?.clienteId ?? null, itens:prev?.itens || [],
+  status:o.status === 'pago' ? 'paga' : 'aberta', total:Number(o.totalAmount||0), abertaEm:hm(o.createdAt), pagoEm:hm(o.paymentTime)});
+
+/* ---- front -> back ---- */
+const mesaBody = m => ({number:m.numero, seating_capacity:m.capacidade, available:m.status === 'livre'});
+const pratoBody = (p, categoryId) => ({name:p.nome, description:p.descricao||'', price:p.preco, category:p.categoria,
+  categoryId, available:p.ativo, imageUrl:p.imagemUrl||''});
+const insumoBody = i => { const b = {name:i.nome, quantity:Math.round(i.qtd), minimumStock:Math.round(i.minimo),
+  unit:i.unidade, perishable:!!i.perecivel}; if(i.validade) b.expiration_date = i.validade; return b; };
+
+S.categorias = [];
+async function catId(nome){
+  let c = S.categorias.find(x => x.nome === nome);
+  if(!c){ c = toCategoria(await api('POST', '/categories', {type:nome})); S.categorias.push(c); }
+  return c.id;
+}
+async function syncMesa(id){ const m = byId(S.mesas, id); if(m) await api('PUT', '/mesas/' + id, mesaBody(m)); }
+
+async function carregar(){
+  const g = p => api('GET', p).catch(e => { console.error(e); return null; });
+  const [m, p, i, c, t] = await Promise.all([g('/mesas'), g('/pratos'), g('/supplies'), g('/categories'), g('/tabs')]);
+  if(!m && !p && !i) toast('Não foi possível carregar os dados da API', true);
+  if(m) S.mesas = m.map(toMesa);
+  if(p) S.pratos = p.map(toPrato);
+  if(i) S.insumos = i.map(toInsumo);
+  if(c) S.categorias = c.map(toCategoria);
+  if(t){ const old = S.comandas;
+    S.comandas = t.filter(o => o.status !== 'cancelado').map(o => toComanda(o, old.find(x => x.id === o.id)))
+      .filter(x => byId(S.mesas, x.mesaId)); }
+  render();
+}
+
+/* ---- Login / cadastro ---- */
+function jwt(t){ try{ return JSON.parse(decodeURIComponent(escape(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))))); }catch(e){ return {}; } }
+
+function papelDe(cl, resp){
+  const brutos = [cl.role, cl.roles, cl.authorities, cl.scope, cl.perfil, cl.papel,
+    resp && resp.role, resp && resp.roles, resp && resp.user && resp.user.role];
+  const lista = brutos.flat(Infinity).filter(Boolean)
+    .flatMap(v => typeof v === 'string' ? v.split(/[\s,]+/) : [v.authority || v.name || v.role || ''])
+    .map(v => String(v).toUpperCase().replace(/^ROLE_/, ''));
+  if(lista.includes('ADMIN')) return 'admin';
+  if(lista.includes('WAITER')) return 'garcom';
+  return 'cliente';
+}
+login = async function(email, senha){
+  let r;
+  try{
+    r = await api('POST', '/auth/login', {email, password:senha});
+    TOKEN = r.accessToken;
+  }catch(e){ toast(e.status === 401 || e.status === 403 ? 'E-mail ou senha inválidos' : e.message, true); return; }
+  const cl = jwt(TOKEN);
+  console.log('Claims do JWT:', cl, 'Resposta do login:', r);
+  const {sub, email:_e, name, nome, iss, iat, exp, jti, ...claimsResto} = cl;
+  const {accessToken, refreshToken, token, ...respResto} = r || {};
+  const papel = papelDe(cl, r);
+  const idBruto = r?.id ?? r?.userId ?? r?.user?.id ?? cl.userId ?? cl.id ?? cl.sub;
+const idNum = Number(idBruto);
+S.user = {
+  id: idEstavel(email),
+  apiId: (idBruto !== undefined && idBruto !== '' && Number.isInteger(idNum)) ? idNum : null,
+  uuid: idBruto,
+  nome: cl.name || cl.nome || email.split('@')[0],
+  email, papel, salario: 0
+};
+console.log('ID do login:', S.user.apiId, '(bruto:', idBruto, ')');
+  S.view = papel === 'admin' ? 'dashboard' : papel === 'garcom' ? 'mesas' : 'reservar';
+  toast('Bem-vindo(a), ' + S.user.nome.split(' ')[0] + '!');
+  render(); carregarReservas(); await carregar();
+};
+
+cadastrar = run(async () => {
+  const nome = val('c_nome');
+  const email = val('c_email');
+  const senha = val('c_senha');
+  const cpf = val('c_cpf');
+  const nasc = val('c_nasc');
+  const genero = val('c_genero');
+
+  if (!nome || !email || !senha || !cpf || !nasc || !genero) {
+    toast('Preencha todos os campos', true);
+    return;
+  }
+
+  await api('POST', '/auth/register', {
+    name: nome,
+    cpf: cpf,
+    password: senha,
+    birth_date: nasc,
+    email: email,
+    gender: genero
+  });
+
+  toast('Conta criada! Entrando...');
+  await login(email, senha);
+});
+const _logout = logout; logout = function(){ TOKEN = null; _logout(); };
+
+const _viewLogin = viewLogin;
+viewLogin = () => _viewLogin().replace('<div style="margin-bottom:16px"><label>Senha</label><input id="c_senha"',
+  '<div style="margin-bottom:10px"><label>CPF</label><input id="c_cpf" placeholder="000.000.000-00"></div>' +
+  '<div style="margin-bottom:10px"><label>Data de nascimento</label><input id="c_nasc" type="date"></div>' +
+  '<div style="margin-bottom:10px"><label>Gênero</label><select id="c_genero">' +
+    '<option value="">Selecione</option>' +
+    '<option value="Masculino">Masculino</option>' +
+    '<option value="Feminino">Feminino</option>' +
+    '<option value="Outro">Outro</option>' +
+    '<option value="Prefiro não informar">Prefiro não informar</option>' +
+  '</select></div>' +
+  '<div style="margin-bottom:16px"><label>Senha</label><input id="c_senha"');
+
+/* categorias da API no formulário de pratos */
+const _render = render;
+render = function(){
+  _render();
+  const sel = $('p_cat');
+  if(sel){
+    const fixas = ['Entradas','Principais','Porções','Sobremesas','Bebidas'];
+    const ocultas = ['comida'];
+    const nomes = [...new Set([...fixas, ...S.categorias.map(c => c.nome)])]
+      .filter(n => !ocultas.includes(n.toLowerCase()));
+    sel.innerHTML = nomes.map(n => `<option ${n === 'Principais' ? 'selected' : ''}>${n}</option>`).join('');
+  }
+};
+
+/* ---- Mesas ---- */
+criarMesa = run(async () => {
+  const numero = parseInt(val('m_num')), capacidade = parseInt(val('m_cap'));
+  if(!numero || !capacidade){ toast('Informe número e capacidade', true); return; }
+  if(S.mesas.some(m => m.numero === numero)){ toast('Já existe mesa com esse número', true); return; }
+  await api('POST', '/mesas', mesaBody({numero, capacidade, status:'livre'}));
+  toast('Mesa ' + numero + ' criada'); await carregar();
+});
+salvarMesa = run(async id => {
+  const m = {...byId(S.mesas, id)};
+  m.numero = parseInt(val('mn'+id)) || m.numero;
+  m.capacidade = parseInt(val('mc'+id)) || m.capacidade;
+  m.status = val('ms'+id);
+  await api('PUT', '/mesas/' + id, mesaBody(m));
+  toast('Mesa atualizada'); await carregar();
+});
+deletarMesa = run(async id => {
+  if(comandaAberta(id)){ toast('Não é possível: mesa tem comanda aberta', true); return; }
+  await api('DELETE', '/mesas/' + id); toast('Mesa removida'); await carregar();
+});
+mudarStatusMesa = run(async (id, status) => {
+  await api('PUT', '/mesas/' + id, mesaBody({...byId(S.mesas, id), status}));
+  toast('Mesa atualizada'); await carregar();
+});
+
+/* ---- Pratos ---- */
+criarPrato = run(async () => {
+  const nome = val('p_nome'), categoria = val('p_cat'), preco = num('p_preco'), descricao = val('p_desc');
+  if(!nome || !preco){ toast('Informe nome e preço', true); return; }
+  await api('POST', '/pratos', pratoBody({nome, categoria, preco, descricao, ativo:true}, await catId(categoria)));
+  toast('Prato criado'); await carregar();
+});
+salvarPrato = run(async id => {
+  const p = {...byId(S.pratos, id)};
+  p.nome = val('pn'+id) || p.nome;
+  p.descricao = val('pd'+id);
+  p.preco = parseFloat(val('pp'+id)) || p.preco;
+  p.ativo = val('pa'+id) === 'true';
+  await api('PUT', '/pratos/' + id, pratoBody(p, p.categoryId ?? await catId(p.categoria)));
+  toast('Prato atualizado'); await carregar();
+});
+deletarPrato = run(async id => { await api('DELETE', '/pratos/' + id); toast('Prato removido'); await carregar(); });
+
+/* ---- Insumos (supplies) ---- */
+criarInsumo = run(async () => {
+  const nome = val('i_nome'), unidade = val('i_un'), qtd = num('i_qtd'), minimo = num('i_min');
+  if(nome.length < 2){ toast('Informe o nome do insumo (mín. 2 letras)', true); return; }
+  await api('POST', '/supplies', insumoBody({nome, unidade, qtd, minimo}));
+  toast('Insumo adicionado'); await carregar();
+});
+salvarInsumo = run(async id => {
+  const i = {...byId(S.insumos, id)};
+  i.nome = val('in'+id) || i.nome; i.minimo = parseFloat(val('im'+id)) || i.minimo;
+  await api('PUT', '/supplies/' + id, insumoBody(i)); toast('Insumo atualizado'); await carregar();
+});
+deletarInsumo = run(async id => { await api('DELETE', '/supplies/' + id); toast('Insumo removido'); await carregar(); });
+reposicao = run(async id => {
+  const q = parseFloat(val('ir'+id));
+  if(!q || q <= 0){ toast('Informe a quantidade reposta', true); return; }
+  const i = {...byId(S.insumos, id)}; i.qtd += q;
+  await api('PUT', '/supplies/' + id, insumoBody(i)); toast('Reposição registrada (+' + q + ')'); await carregar();
+});
+baixaExpediente = run(async id => {
+  const q = parseFloat(val('ib'+id)), i = {...byId(S.insumos, id)};
+  if(!q || q <= 0){ toast('Informe a quantidade consumida', true); return; }
+  if(q > i.qtd){ toast('Estoque insuficiente', true); return; }
+  i.qtd -= q;
+  await api('PUT', '/supplies/' + id, insumoBody(i)); toast('Baixa de expediente registrada (-' + q + ')'); await carregar();
+});
+
+/* ---- Comandas (tabs). Os itens do pedido ficam só no navegador: o backend não tem campo para eles. ---- */
+abrirComanda = run(async (mesaId, clienteId) => {
+  if(comandaAberta(mesaId)){ toast('Mesa já possui comanda aberta', true); return; }
+  const waiterId = S.user.apiId;
+const r = await api('POST', '/tabs', {tableId:mesaId, status:'aberto', ...(waiterId != null ? {waiterId} : {})});
+const c = {id:r.id, mesaId, waiterId, clienteId:clienteId || null, itens:[], status:'aberta', abertaEm:hm(new Date())};
+  S.comandas.push(c); byId(S.mesas, mesaId).status = 'ocupada'; S.sel.comanda = c.id;
+  await syncMesa(mesaId);
+  toast('Comanda aberta na mesa ' + byId(S.mesas, mesaId).numero); render();
+});
+pagarComanda = run(async id => {
+  const c = byId(S.comandas, id);
+  if(!c.itens.length){ toast('Comanda vazia', true); return; }
+  const sub = totalComanda(c), total = sub * 1.1;
+  await api('PUT', '/tabs/' + id, {tableId:c.mesaId, ...((c.waiterId ?? S.user.apiId) != null ? {waiterId:c.waiterId ?? S.user.apiId} : {}),
+  status:'pago', serviceCharge:+(sub*0.1).toFixed(2), discount:0,
+  totalAmount:+total.toFixed(2), paymentTime:new Date().toISOString()});
+  c.total = total; c.status = 'paga'; c.pagoEm = hm(new Date());
+  byId(S.mesas, c.mesaId).status = 'livre'; S.sel.comanda = null;
+  await syncMesa(c.mesaId);
+  toast('Pagamento de ' + money(total) + ' confirmado'); render();
+});
+
+/* reservas continuam locais (sem endpoint), mas o status da mesa é gravado na API */
+const _reservar = reservar;
+reservar = run(async id => { _reservar(id); await syncMesa(id); });
+const _cancelarReserva = cancelarReserva;
+cancelarReserva = run(async id => { const r = byId(S.reservas, id); _cancelarReserva(id); if(r) await syncMesa(r.mesaId); });
+
+S.funcionarios = [];
+S.cargos = [];
+S.modelos = [];
+S.eqErro = false;
+
+const dataBR = d => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
+const tipoDe = (arr, id) => (arr.find(x => x.id === id) || {}).type;
+
+const _carregarEq = carregar;
+carregar = async function(){
+  await _carregarEq();
+  if(!S.user || S.user.papel !== 'admin') return;
+  const g = p => api('GET', p).catch(e => { console.error(e); return null; });
+  const [e, c, m] = await Promise.all([g('/employees'), g('/positions'), g('/work-models')]);
+  S.eqErro = !e;
+  if(e) S.funcionarios = e;
+  if(c) S.cargos = c;
+  if(m) S.modelos = m;
+  render();
+};
+
+function viewAdmEquipeApi(){
+  const lista = S.funcionarios;
+  const folha = S.pagamentos.filter(p => p.empId);
+  return `
+  <div class="page-head"><div><h2>Equipe</h2><p>Funcionários cadastrados na API</p></div>
+  <button class="btn sec" onclick="recarregarEquipe()">Atualizar</button></div>
+  <div class="card"><h3>Funcionários (${lista.length})</h3>
+    ${S.eqErro ? '<div class="empty">Não foi possível carregar os funcionários.</div>' : lista.length ? `
+    <table><tr><th>Funcionário</th><th>Cargo</th><th>Modelo</th><th>Salário</th><th>Carga</th><th>Desde</th><th>Último pagamento</th><th></th></tr>
+    ${lista.map(e => {
+      const pg = folha.filter(p => p.empId === e.id).slice(-1)[0];
+      return `<tr><td>Usuário #${e.userId}</td>
+      <td>${tipoDe(S.cargos, e.positionId) || '#' + e.positionId}</td>
+      <td>${tipoDe(S.modelos, e.workModelId) || '#' + e.workModelId}</td>
+      <td>${money(Number(e.salary || 0))}</td>
+      <td>${e.workingHours} h</td>
+      <td>${dataBR(e.createdAt)}</td>
+      <td>${pg ? pg.data : '—'}</td>
+      <td><button class="btn sm" onclick="pagarSalarioEmp(${e.id})">Pagar salário</button></td></tr>`;
+    }).join('')}
+    </table>` : '<div class="empty">Nenhum funcionário cadastrado.</div>'}
+  </div>
+  ${folha.length ? `<div class="card"><h3>Folha de pagamento</h3>
+    ${folha.map(p => `<div class="item-row"><div><div class="nm">Funcionário #${p.empId}</div>
+    <div class="mt">${p.data}</div></div><span class="pill success">${money(p.valor)}</span></div>`).join('')}</div>` : ''}`;
+}
+
+function pagarSalarioEmp(id){
+  const e = S.funcionarios.find(x => x.id === id);
+  if(!e) return;
+  const valor = Number(e.salary || 0);
+  S.pagamentos.push({id:nid(), empId:id, valor, data:hoje()});
+  toast('Salário pago: ' + money(valor));
+  render();
+}
+
+const recarregarEquipe = run(async () => { await carregar(); toast('Equipe atualizada'); });
+
+VIEWS['adm-equipe'] = viewAdmEquipeApi;
+
+/* ---- Cadastro de funcionário (POST /employees) ---- */
+
+const EMP_PADRAO = {positionId: 2, workModelId: 3};   // garçom / modelo 3
+const CARGOS_FIXOS = [
+  {id:1, type:'cozinheiro'}, {id:2, type:'garçom'}, {id:3, type:'gerente'},
+  {id:4, type:'recepcionista'}, {id:5, type:'limpeza'}
+];
+
+const criarFuncionario = run(async () => {
+  const positionId = parseInt(val('e_cargo')) || EMP_PADRAO.positionId;
+  const salary = num('e_sal');
+  const workingHours = num('e_hrs');
+  if(salary < 0 || workingHours <= 0){ toast('Informe salário e carga horária válidos', true); return; }
+  await api('POST', '/employees', {
+    positionId,
+    workModelId: EMP_PADRAO.workModelId,
+    salary,
+    workingHours
+  });
+  toast('Funcionário cadastrado'); await carregar();
+});
+
+const _viewEquipe = viewAdmEquipeApi;
+VIEWS['adm-equipe'] = () => {
+  const cargos = S.cargos.length ? S.cargos : CARGOS_FIXOS;
+  return _viewEquipe().replace('<div class="card"><h3>Funcionários (',
+  `<div class="card"><h3>Novo funcionário</h3>
+    <div class="form-row">
+      <div><label>Cargo</label><select id="e_cargo">
+        ${cargos.map(c => `<option value="${c.id}" ${c.id === EMP_PADRAO.positionId ? 'selected' : ''}>${c.type}</option>`).join('')}
+      </select></div>
+      <div><label>Salário (R$)</label><input type="number" id="e_sal" step="0.01" min="0" placeholder="2100.00"></div>
+      <div><label>Carga horária (h)</label><input type="number" id="e_hrs" step="0.5" min="0" value="40"></div>
+      <div style="flex:0"><button class="btn" onclick="criarFuncionario()">Cadastrar</button></div>
+    </div>
+    <p class="hint">Modelo de trabalho padrão: ${tipoDe(S.modelos, EMP_PADRAO.workModelId) || '#' + EMP_PADRAO.workModelId}</p>
+  </div>
+  <div class="card"><h3>Funcionários (`);
+};
+
+/* ---- Cliente: Minhas mesas (GET /mesas/{id}, id salvo no login) ---- */
+
+
+
+
+function viewMinhasMesas(){
+  const m = S.minhaMesa;
+  return `
+  <div class="page-head"><div><h2>Minhas mesas</h2><p>GET /mesas/${S.user.apiId ?? '?'}</p></div>
+  <button class="btn sec" onclick="carregarMinhasMesas()">Atualizar</button></div>
+  <div class="card">
+    ${m ? `<div class="item-row"><div><div class="nm">Mesa ${m.numero}</div>
+      <div class="mt">${m.capacidade} lugares</div></div>
+      <span class="pill ${statusPill[m.status]}">${m.status}</span></div>`
+    : `<div class="empty">${S.minhaMesaErro || 'Carregando...'}</div>`}
+  </div>`;
+}
+VIEWS['minhas-mesas'] = viewMinhasMesas;
+
+const _goMM = go;
+go = function(v){ _goMM(v); if(v === 'minhas-mesas') carregarMinhasMesas(); };
+
+/* ---- Reservas persistentes (não há endpoint na API) ---- */
+const RESERVAS_KEY = 'rest_reservas';
+function salvarReservas(){ try{ localStorage.setItem(RESERVAS_KEY, JSON.stringify(S.reservas)); }catch(e){} }
+function carregarReservas(){
+  try{
+    S.reservas = JSON.parse(localStorage.getItem(RESERVAS_KEY) || '[]');
+    uid = Math.max(uid, ...S.reservas.map(r => r.id));   // evita ids repetidos
+  }catch(e){ S.reservas = []; }
+}
+// id numérico estável por e-mail: o mesmo cliente sempre recebe o mesmo id
+function idEstavel(email){ return [...String(email).toLowerCase()].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) + 1000000; }
+
+const _reservarP = reservar;
+reservar = async id => { await _reservarP(id); salvarReservas(); };
+const _cancelarP = cancelarReserva;
+cancelarReserva = async id => { await _cancelarP(id); salvarReservas(); };
+/* ---- Sessão persistente (sobrevive ao F5) ---- */
+const SESSAO = 'rest_sessao';
+
+function salvarSessao(){
+  try{
+    if(TOKEN && S.user){
+      localStorage.setItem(SESSAO, JSON.stringify({token:TOKEN, user:S.user, view:S.view, mesa:S.sel.mesa}));
+    } else {
+      localStorage.removeItem(SESSAO);
+    }
+  }catch(e){}
+}
+
+const _renderSessao = render;
+render = function(){ _renderSessao(); salvarSessao(); };
+
+(async function restaurarSessao(){
+  try{
+    const s = JSON.parse(localStorage.getItem(SESSAO) || 'null');
+    if(!s || !s.token) return;
+    const cl = jwt(s.token);
+    if(cl.exp && cl.exp * 1000 < Date.now()){ localStorage.removeItem(SESSAO); return; }
+      TOKEN = s.token;
+    S.user = s.user;
+    S.user.id = idEstavel(S.user.email);
+    S.view = s.view;
+    S.sel.mesa = s.mesa ?? null;
+    carregarReservas();
+    render();
+    await carregar();
+  }catch(e){ console.error(e); }
+})();
+</script>
+
 </body>
 </html>
